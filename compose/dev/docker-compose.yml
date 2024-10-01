@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  npm:
+    build:
+      dockerfile_inline: |
+        FROM node:22-alpine
+        VOLUME /app
+        WORKDIR /app
+        USER node
+    container_name: npm
+    volumes:
+      - "$ROOT:/app:delegated"
+    command: ["npm", "install"]
+
+  laborator:
+    image: laborator
+    build:
+      context: "$ROOT"
+      dockerfile: "$ROOT/compose/dev/Dockerfile"
+    container_name: laborator
+    volumes:
+      - "$ROOT:/app:delegated"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+    ports:
+      - "8000:8000"
+    depends_on:
+      npm:
+        condition: service_completed_successfully
