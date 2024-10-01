@@ -21,6 +21,9 @@ export const ServerConfigSchema = Type.Object({
       default: 1000 * 60,
     }),
   }),
+  trustProxy: Type.Boolean({
+    default: false,
+  }),
 });
 
 export type ServerConfig = Static<typeof ServerConfigSchema>;

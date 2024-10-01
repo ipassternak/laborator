@@ -1,3 +1,4 @@
+import { FastifyRequest } from 'fastify';
 import closeWithGrace from 'close-with-grace';
 
 import env from './lib/core/env';
@@ -9,8 +10,21 @@ async function bootstrap(): Promise<void> {
   const config = env.config(GlobalConfigSchema);
 
   const options = {
+    trustProxy: config.server.trustProxy,
     logger: {
       level: config.server.logger.level,
+      serializers: {
+        req(req: FastifyRequest): object {
+          return {
+            method: req.method,
+            url: req.url,
+            headers: req.headers,
+            hostname: req.hostname,
+            remoteAddress: req.ip,
+            remotePort: req.socket.remotePort,
+          };
+        },
+      },
     },
   };
 
