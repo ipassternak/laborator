@@ -42,7 +42,7 @@ docker-compose -f path/to/compose/dev/Dockerfile up -d
 The project supports hot reloading out of the box. Start the development process, and any changes you make will immediately reflect in the running project:
 
 ```bash
-npm i        -- install all required dependencies
+npm i        # -- install all required dependencies
 npm run dev
 ```
 
