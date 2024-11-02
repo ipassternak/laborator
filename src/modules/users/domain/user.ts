@@ -7,23 +7,23 @@ import {
   UserData,
   UsersDataset,
 } from '../schemas/user';
-import { User } from '../types/user';
+import { User, UserErrorCode } from '../types/user';
 
-export const ErrNotFound = createError(
-  'USR_ERR_NOT_FOUND',
+export const ErrUserNotFound = createError(
+  UserErrorCode.NotFound,
   'User not found',
   404,
 );
 
-export const ErrNameAlreadyInUse = createError(
-  'USR_ERR_NAME_ALREADY_IN_USE',
+export const ErrUserNameAlreadyInUse = createError(
+  UserErrorCode.NameAlreadyInUse,
   'User name already in use',
   409,
 );
 
 export class Users {
-  private readonly storage: Map<string, User>;
-  private readonly usedNames: Set<string>;
+  private readonly storage = new Map<string, User>();
+  private readonly usedNames = new Set<string>();
   private readonly mappers = {
     toData: (user: User) => ({
       id: user.id,
@@ -31,13 +31,7 @@ export class Users {
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     }),
-    toDataset: (users: User[]) => users.map(this.mappers.toData),
   };
-
-  constructor() {
-    this.storage = new Map();
-    this.usedNames = new Set();
-  }
 
   private exists(name: string) {
     return this.usedNames.has(name);
@@ -46,7 +40,7 @@ export class Users {
   private find(id: string) {
     const user = this.storage.get(id);
 
-    if (!user) throw new ErrNotFound();
+    if (!user) throw new ErrUserNotFound();
 
     return user;
   }
@@ -56,7 +50,7 @@ export class Users {
 
     const nameIsUsed = this.exists(name);
 
-    if (nameIsUsed) throw new ErrNameAlreadyInUse();
+    if (nameIsUsed) throw new ErrUserNameAlreadyInUse();
 
     const id = randomUUID();
 
@@ -82,12 +76,14 @@ export class Users {
 
     if (name) users = users.filter((user) => user.name.includes(name));
 
+    const total = users.length;
+
     users.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
     users = users.slice((page - 1) * pageSize, page * pageSize);
 
     return {
-      data: this.mappers.toDataset(users),
-      total: this.storage.size,
+      data: users.map(this.mappers.toData),
+      total,
     };
   }
 
@@ -110,7 +106,7 @@ export class Users {
 
     const nameIsUsed = this.exists(name);
 
-    if (nameIsUsed) throw new ErrNameAlreadyInUse();
+    if (nameIsUsed) throw new ErrUserNameAlreadyInUse();
 
     user = { ...user, name, updatedAt: new Date() };
 

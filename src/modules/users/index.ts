@@ -13,7 +13,7 @@ const plugin: AppPlugin = async (app, options) => {
 
   await app.register(autoload, {
     dir: path.join(__dirname, 'routes'),
-    options: { ...options, prefix: undefined },
+    options,
   });
 };
 

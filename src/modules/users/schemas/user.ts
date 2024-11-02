@@ -1,4 +1,5 @@
 import { Static, Type } from '@sinclair/typebox';
+import { UserErrorCode } from '../types/user';
 
 export const UserParamsSchema = Type.Object({
   id: Type.String(),
@@ -53,14 +54,14 @@ export type UsersDataset = Static<typeof UsersDatasetSchema>;
 
 export const ErrUserNotFoundSchema = Type.Object({
   statusCode: Type.Literal(404),
-  code: Type.Literal('ERR_USR_NOT_FOUND'),
+  code: Type.Literal(UserErrorCode.NotFound),
   message: Type.String(),
   error: Type.String(),
 });
 
 export const ErrUserNameAlreadyInUseSchema = Type.Object({
   statusCode: Type.Literal(409),
-  code: Type.Literal('ERR_USR_NAME_ALREADY_IN_USE'),
+  code: Type.Literal(UserErrorCode.NameAlreadyInUse),
   message: Type.String(),
   error: Type.String(),
 });

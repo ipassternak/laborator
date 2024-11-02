@@ -80,3 +80,5 @@ const plugin: AppPlugin = async (app) => {
 };
 
 export default plugin;
+
+export const prefixOverride = '/';
