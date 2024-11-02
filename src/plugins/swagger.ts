@@ -13,12 +13,6 @@ const plugin: AppPlugin = async (app, opts) => {
         description: pkg.description,
         version: pkg.version,
       },
-      servers: [
-        {
-          url: `http://localhost:${config.server.port}`,
-          description: 'Development server',
-        },
-      ],
       components: {
         securitySchemes: {
           bearerAuth: {
