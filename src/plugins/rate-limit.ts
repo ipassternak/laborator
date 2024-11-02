@@ -1,18 +1,14 @@
-import fp from 'fastify-plugin';
 import rateLimit from '@fastify/rate-limit';
-import { FastifyInstance } from 'fastify';
+import fp from 'fastify-plugin';
 
-import { PluginOptions } from '../lib/types/common';
+const plugin: AppPlugin = async (app, opts) => {
+  const { config } = opts;
 
-async function plugin(
-  app: FastifyInstance,
-  { config }: PluginOptions,
-): Promise<void> {
   await app.register(rateLimit, {
     max: config.server.rateLimit.max,
     timeWindow: config.server.rateLimit.timeWindow,
   });
-}
+};
 
 export default fp(plugin, {
   name: 'rateLimit',

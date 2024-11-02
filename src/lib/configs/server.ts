@@ -9,7 +9,6 @@ export const ServerConfigSchema = Type.Object({
   }),
   logger: Type.Object({
     level: Type.String({
-      env: 'LOG_LEVEL',
       default: 'info',
     }),
   }),

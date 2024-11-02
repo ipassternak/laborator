@@ -1,29 +1,26 @@
 import * as path from 'node:path';
-
-import fastify, { FastifyInstance } from 'fastify';
 import autoload from '@fastify/autoload';
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
-
-import { GlobalConfig } from './lib/configs/global';
+import fastify, { FastifyServerOptions } from 'fastify';
+import pkg from '../package.json';
 
 export async function build(
-  config: GlobalConfig,
-  options?: Record<string, unknown>,
-): Promise<FastifyInstance> {
-  const app = fastify(options).withTypeProvider<TypeBoxTypeProvider>();
+  config: AppConfig,
+  options?: FastifyServerOptions,
+) {
+  const app = fastify(options);
 
   await app.register(autoload, {
     dir: path.join(__dirname, 'plugins'),
     encapsulate: false,
-    options: { config },
+    options: { config, pkg },
   });
 
-  // TODO: Uncomment to load app modules
-  // await app.register(autoload, {
-  //   dir: path.join(__dirname, 'modules'),
-  //   maxDepth: 1,
-  //   options: { config },
-  // });
+  await app.register(autoload, {
+    dir: path.join(__dirname, 'modules'),
+    encapsulate: false,
+    maxDepth: 1,
+    options: { config, pkg },
+  });
 
-  return app;
+  return await app;
 }

@@ -1,14 +1,25 @@
+import { Type } from '@sinclair/typebox';
 import fp from 'fastify-plugin';
-import { FastifyInstance } from 'fastify';
 
-async function plugin(app: FastifyInstance): Promise<void> {
-  app.get('/healthcheck', async () => ({
+const plugin: AppPlugin = async (app) => {
+  app.get('/healthz', {
+    schema: {
+      tags: ['Healthcheck'],
+      summary: 'Check the health of the servic',
+      response: {
+        200: Type.Object({
+          status: Type.String(),
+          date: Type.String({ format: 'date-time' }),
+        }),
+      },
+    },
+  }, async () => ({
     status: 'ready',
-    date: new Date(),
+    date: new Date().toISOString(),
   }));
-}
+};
 
 export default fp(plugin, {
   name: 'healthcheck',
-  dependencies: ['rateLimit'],
+  dependencies: ['rateLimit', 'swagger'],
 });

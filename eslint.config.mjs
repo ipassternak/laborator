@@ -2,6 +2,7 @@
 
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
+import { flatConfigs } from 'eslint-plugin-import';
 
 export default tseslint.config(
   {
@@ -14,6 +15,7 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
+  flatConfigs.recommended,
   {
     languageOptions: {
       ecmaVersion: 2022,
@@ -21,6 +23,14 @@ export default tseslint.config(
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.url,
+      },
+    },
+    settings: {
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          tsconfigRootDir: import.meta.url,
+        },
       },
     },
     rules: {
@@ -38,11 +48,31 @@ export default tseslint.config(
         'error',
         'always',
       ],
-      '@typescript-eslint/explicit-function-return-type': 'error',
       '@typescript-eslint/explicit-member-accessibility': [
         'error',
         {
           accessibility: 'no-public',
+        },
+      ],
+      '@typescript-eslint/restrict-template-expressions': [
+        'off',
+      ],
+      'import/order': [
+        'error',
+        {
+          'groups': [
+            'builtin',
+            'external',
+            'internal',
+            'parent',
+            'sibling',
+            'index'
+          ],
+          'alphabetize': {
+            order: 'asc',
+            caseInsensitive: true
+          },
+          'newlines-between': 'never',
         },
       ],
       'spaced-comment': [
@@ -215,7 +245,7 @@ export default tseslint.config(
           nonwords: false,
           overrides: {
             typeof: false,
-          }
+          },
         },
       ],
       'no-unreachable': [

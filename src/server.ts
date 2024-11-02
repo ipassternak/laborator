@@ -1,20 +1,18 @@
-import { FastifyRequest } from 'fastify';
 import closeWithGrace from 'close-with-grace';
-
-import env from './lib/core/env';
-import log from './lib/core/log';
-import { GlobalConfigSchema } from './lib/configs/global';
 import { build } from './app';
+import { ConfigSchema } from './lib/configs';
+import { config } from './lib/core/env';
+import { fatal } from './lib/core/log';
 
-async function bootstrap(): Promise<void> {
-  const config = env.config(GlobalConfigSchema);
+async function bootstrap() {
+  const cfg = config(ConfigSchema);
 
-  const options = {
-    trustProxy: config.server.trustProxy,
+  const app = await build(cfg, {
+    trustProxy: cfg.server.trustProxy,
     logger: {
-      level: config.server.logger.level,
+      level: cfg.server.logger.level,
       serializers: {
-        req(req: FastifyRequest): object {
+        req(req) {
           return {
             method: req.method,
             url: req.url,
@@ -26,13 +24,11 @@ async function bootstrap(): Promise<void> {
         },
       },
     },
-  };
-
-  const app = await build(config, options);
+  });
 
   await app.listen({
-    host: config.server.host,
-    port: config.server.port,
+    host: cfg.server.host,
+    port: cfg.server.port,
   });
 
   closeWithGrace(async ({ signal, err }) => {
@@ -46,4 +42,4 @@ async function bootstrap(): Promise<void> {
   });
 }
 
-bootstrap().catch(log.fatal);
+bootstrap().catch(fatal);

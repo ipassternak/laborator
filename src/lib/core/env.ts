@@ -5,10 +5,10 @@ import { Value } from '@sinclair/typebox/value';
 const isObject = (schema: TSchema): schema is TObject =>
   schema.type === 'object';
 
-const init = (
+function init(
   schema: TSchema,
   path = '',
-): unknown => {
+) {
   if (isObject(schema)) {
     const cfg: Record<string, unknown> = {};
 
@@ -33,19 +33,19 @@ const init = (
   return Value.Convert(schema, Value.Default(schema, value));
 };
 
-class ConfigError extends Error {
+export class ConfigError extends Error {
   constructor(readonly pathes: object[]) {
     super('configuration error');
   }
 }
 
-const validate = <T extends TSchema>(
-  schema: T,
+export function validate(
+  schema: TSchema,
   cfg: unknown,
-): cfg is Static<T> => {
+) {
   const compiler = TypeCompiler.Compile(schema);
 
-  if (compiler.Check(cfg)) return true;
+  if (compiler.Check(cfg)) return;
 
   const pathes = [...compiler.Errors(cfg)]
     .map((err) => ({
@@ -56,16 +56,10 @@ const validate = <T extends TSchema>(
   throw new ConfigError(pathes);
 };
 
-const config = <T extends TSchema>(schema: T): Static<T> => {
+export function config<T extends TSchema>(schema: T): Static<T> {
   const cfg = init(schema);
 
   validate(schema, cfg);
 
   return cfg;
-};
-
-export default {
-  init,
-  validate,
-  config,
 };
