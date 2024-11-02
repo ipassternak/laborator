@@ -3,7 +3,7 @@ WORKDIR /tmp/
 COPY package.json package-lock.json tsconfig.json ./
 RUN npm install
 COPY src/ src/
-RUN npm run build && npm prune --production
+RUN npm run build -- --sourceMap false && npm prune --production
 
 FROM node:22-alpine
 WORKDIR /app

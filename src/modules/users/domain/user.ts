@@ -82,8 +82,8 @@ export class Users {
 
     if (name) users = users.filter((user) => user.name.includes(name));
 
-    users = users.slice((page - 1) * pageSize, page * pageSize);
     users.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    users = users.slice((page - 1) * pageSize, page * pageSize);
 
     return {
       data: this.mappers.toDataset(users),
