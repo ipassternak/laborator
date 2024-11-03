@@ -20,7 +20,7 @@ const plugin: AppPlugin = async (app) => {
         200: CategoriesDatasetSchema,
       },
     },
-  }, async ({ query }) => app.wastings.categories.list(query));
+  }, async ({ query }) => app.outgoings.categories.list(query));
 
   app.get('/:id', {
     schema: {
@@ -32,7 +32,7 @@ const plugin: AppPlugin = async (app) => {
         404: ErrCategoryNotFoundSchema,
       },
     },
-  }, async ({ params: { id } }) => app.wastings.categories.get(id));
+  }, async ({ params: { id } }) => app.outgoings.categories.get(id));
 
   app.post('', {
     schema: {
@@ -45,7 +45,7 @@ const plugin: AppPlugin = async (app) => {
       },
     },
   }, async ({ body }, reply) => {
-    const res = app.wastings.categories.create(body);
+    const res = app.outgoings.categories.create(body);
 
     reply.code(201).send(res);
   });
@@ -63,7 +63,7 @@ const plugin: AppPlugin = async (app) => {
       },
     },
   }, async ({ params: { id }, body }) =>
-    app.wastings.categories.update(id, body),
+    app.outgoings.categories.update(id, body),
   );
 
   app.delete('/:id', {
@@ -78,7 +78,7 @@ const plugin: AppPlugin = async (app) => {
         404: ErrCategoryNotFoundSchema,
       },
     },
-  }, async ({ params: { id } }) => app.wastings.categories.delete(id));
+  }, async ({ params: { id } }) => app.outgoings.categories.delete(id));
 };
 
 export default plugin;

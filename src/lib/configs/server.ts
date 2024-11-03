@@ -23,6 +23,8 @@ export const ServerConfigSchema = Type.Object({
   trustProxy: Type.Boolean({
     default: false,
   }),
+  swaggerUiRoute: Type.Optional(Type.String({})),
+  healthcheckRoute: Type.Optional(Type.String({})),
 });
 
 export type ServerConfig = Static<typeof ServerConfigSchema>;

@@ -2,8 +2,8 @@ import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 import fp from 'fastify-plugin';
 
-const plugin: AppPlugin = async (app, opts) => {
-  const { config, pkg } = opts;
+const plugin: AppPlugin = async (app, options) => {
+  const { config, pkg } = options;
 
   await app.register(fastifySwagger, {
     openapi: {
@@ -28,12 +28,11 @@ const plugin: AppPlugin = async (app, opts) => {
     },
   });
 
-  await app.register(fastifySwaggerUi, {
-    routePrefix: '/docs',
-    logLevel: 'error',
-  });
-
-  app.log.info(`Docs available at http://localhost:${config.server.port}/docs`);
+  if (config.server.swaggerUiRoute)
+    await app.register(fastifySwaggerUi, {
+      routePrefix: config.server.swaggerUiRoute,
+      logLevel: 'error',
+    });
 };
 
 export default fp(plugin, {

@@ -7,8 +7,12 @@ import {
   RecordsDataset,
   UpdateRecordData,
 } from '../schemas/record';
-import { Record, RecordErrorCode, UsersIface } from '../types/record';
-import { Categories } from './category';
+import {
+  CategoriesIface,
+  Record,
+  RecordErrorCode,
+  UsersIface,
+} from '../types/record';
 
 const ErrRecordNotFound = createError(
   RecordErrorCode.NotFound,
@@ -30,7 +34,7 @@ export class Records {
   };
 
   constructor(
-    private readonly categories: Categories,
+    private readonly categories: CategoriesIface,
     private readonly users: UsersIface,
   ) {}
 

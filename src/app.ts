@@ -17,8 +17,9 @@ export async function build(
 
   await app.register(autoload, {
     dir: path.join(__dirname, 'modules'),
-    encapsulate: false,
+    ignorePattern: /^.*(?<!\.ts)(?<!\.js)(?<!\.mts)(?<!\.mjs)$/,
     maxDepth: 1,
+    encapsulate: false,
     options: { config, pkg },
   });
 

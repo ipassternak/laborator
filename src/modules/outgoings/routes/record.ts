@@ -19,7 +19,7 @@ const plugin: AppPlugin = async (app) => {
         200: RecordsDatasetSchema,
       },
     },
-  }, async ({ query }) => app.wastings.records.list(query));
+  }, async ({ query }) => app.outgoings.records.list(query));
 
   app.get('/:id', {
     schema: {
@@ -31,7 +31,7 @@ const plugin: AppPlugin = async (app) => {
         404: ErrRecordNotFoundSchema,
       },
     },
-  }, async ({ params: { id } }) => app.wastings.records.get(id));
+  }, async ({ params: { id } }) => app.outgoings.records.get(id));
 
   app.post('', {
     schema: {
@@ -43,7 +43,7 @@ const plugin: AppPlugin = async (app) => {
       },
     },
   }, async ({ body }, reply) => {
-    const res = app.wastings.records.create(body);
+    const res = app.outgoings.records.create(body);
 
     reply.code(201).send(res);
   });
@@ -60,7 +60,7 @@ const plugin: AppPlugin = async (app) => {
       },
     },
   }, async ({ params: { id }, body }) =>
-    app.wastings.records.update(id, body),
+    app.outgoings.records.update(id, body),
   );
 
   app.delete('/:id', {
@@ -75,7 +75,7 @@ const plugin: AppPlugin = async (app) => {
         404: ErrRecordNotFoundSchema,
       },
     },
-  }, async ({ params: { id } }) => app.wastings.records.delete(id));
+  }, async ({ params: { id } }) => app.outgoings.records.delete(id));
 };
 
 export default plugin;

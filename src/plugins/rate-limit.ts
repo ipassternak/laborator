@@ -1,8 +1,8 @@
 import rateLimit from '@fastify/rate-limit';
 import fp from 'fastify-plugin';
 
-const plugin: AppPlugin = async (app, opts) => {
-  const { config } = opts;
+const plugin: AppPlugin = async (app, options) => {
+  const { config } = options;
 
   await app.register(rateLimit, {
     max: config.server.rateLimit.max,

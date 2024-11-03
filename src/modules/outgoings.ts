@@ -1,11 +1,12 @@
 import * as path from 'node:path';
 import autoload from '@fastify/autoload';
-import { Categories } from './domain/category';
-import { Records } from './domain/record';
+import fp from 'fastify-plugin';
+import { Categories } from './outgoings/domain/category';
+import { Records } from './outgoings/domain/record';
 
 declare module 'fastify' {
   interface FastifyInstance {
-    wastings: {
+    outgoings: {
       categories: Categories;
       records: Records;
     };
@@ -16,15 +17,18 @@ const plugin: AppPlugin = async (app, options) => {
   const categories = new Categories();
   const records = new Records(categories, app.users);
 
-  app.decorate('wastings', {
+  app.decorate('outgoings', {
     categories,
     records,
   });
 
   await app.register(autoload, {
-    dir: path.join(__dirname, 'routes'),
+    dir: path.join(__dirname, 'outgoings', 'routes'),
     options,
   });
 };
 
-export default plugin;
+export default fp(plugin, {
+  name: 'outgoings',
+  dependencies: ['users'],
+});

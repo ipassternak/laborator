@@ -4,6 +4,6 @@ export interface Category {
 }
 
 export enum CategoryErrorCode {
-  NameAlreadyInUse = 'WST_CTG_ERR_NAME_ALREADY_IN_USE',
-  NotFound = 'WST_CTG_ERR_NOT_FOUND',
+  NameAlreadyInUse = 'OTG_CTG_ERR_NAME_ALREADY_IN_USE',
+  NotFound = 'OTG_CTG_ERR_NOT_FOUND',
 }
