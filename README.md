@@ -2,6 +2,10 @@
 
 Laborator is a simple Node.js project built on the [Fastify](https://github.com/fastify) framework, designed to create scalable, secure, and reliable applications while ensuring a smooth developer experience.
 
+## Variant of an additional laboratory task
+
+1 variant
+
 ## Getting Started
 
 ### Requirements
