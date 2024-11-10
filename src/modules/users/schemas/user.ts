@@ -7,6 +7,7 @@ export const UserParamsSchema = Type.Object({
 
 export const CreateUserDataSchema = Type.Object({
   name: Type.String({ minLength: 3, maxLength: 32 }),
+  defaultCurrencyId: Type.String({ minLength: 1 }),
 });
 
 export type CreateUserData = Static<typeof CreateUserDataSchema>;
@@ -35,6 +36,7 @@ export type ListUsersQuery = Static<typeof ListUsersQuerySchema>;
 const UserSchema = Type.Object({
   id: Type.String(),
   name: Type.String(),
+  defaultCurrencyId: Type.String(),
   createdAt: Type.String({ format: 'date-time' }),
   updatedAt: Type.String({ format: 'date-time' }),
 });

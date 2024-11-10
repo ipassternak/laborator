@@ -21,6 +21,7 @@ const plugin: AppPlugin = async (app, options) => {
     app.database.record,
     categories,
     app.users,
+    app.currencies,
   );
 
   app.decorate('outgoings', {
@@ -36,5 +37,5 @@ const plugin: AppPlugin = async (app, options) => {
 
 export default fp(plugin, {
   name: 'outgoings',
-  dependencies: ['users'],
+  dependencies: ['users', 'currencies'],
 });

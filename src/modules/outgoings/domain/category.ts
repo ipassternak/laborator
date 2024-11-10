@@ -74,9 +74,10 @@ export class Categories {
   async list(query: ListCategoriesQuery): Promise<CategoriesDataset> {
     const { page, pageSize, name } = query;
 
-    const where = {
+    const where: Prisma.CategoryWhereInput = {
       name: {
         contains: name,
+        mode: 'insensitive',
       },
     };
 

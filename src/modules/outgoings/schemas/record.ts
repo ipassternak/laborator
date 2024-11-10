@@ -19,6 +19,7 @@ export const ListRecordsQuerySchema = Type.Object({
     }),
     Type.Null(),
   ])),
+  currencyId: Type.Optional(Type.String({ minLength: 1 })),
   description: Type.Optional(
     Type.String({
       minLength: 3,
@@ -36,6 +37,7 @@ export type ListRecordsQuery = Static<typeof ListRecordsQuerySchema>;
 export const CreateRecordDataSchema = Type.Object({
   userId: Type.String({ minLength: 1 }),
   categoryId: Type.Optional(Type.String({ minLength: 1 })),
+  currencyId: Type.Optional(Type.String({ minLength: 1 })),
   amount: Type.Number({ minimum: 0 }),
   description: Type.Optional(Type.String({ minLength: 1, maxLength: 255 })),
 });
@@ -65,6 +67,10 @@ export const RecordSchema = Type.Object({
     }),
     Type.Null(),
   ]),
+  currencyId: Type.String(),
+  currency: Type.Object({
+    symbol: Type.String(),
+  }),
   amount: Type.Number(),
   description: Type.Union([Type.String(), Type.Null()]),
   createdAt: Type.String({ format: 'date-time' }),

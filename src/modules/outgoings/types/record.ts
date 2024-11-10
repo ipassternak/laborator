@@ -1,3 +1,4 @@
+import { CurrencyData } from '../../currencies/schemas/currency';
 import { UserData } from '../../users/schemas/user';
 import { CategoryData } from '../schemas/category';
 
@@ -11,4 +12,8 @@ export interface UsersIface {
 
 export interface CategoriesIface {
   get(id: string): Promise<CategoryData>;
+}
+
+export interface CurrenciesIface {
+  get(id: string): Promise<CurrencyData>;
 }

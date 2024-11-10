@@ -7,7 +7,7 @@ import {
   UserData,
   UsersDataset,
 } from '../schemas/user';
-import { UserErrorCode } from '../types/user';
+import { CurrenciesIface, UserErrorCode } from '../types/user';
 
 export const ErrUserNotFound = createError(
   UserErrorCode.NotFound,
@@ -26,6 +26,7 @@ export class Users {
     toData: (user: User) => ({
       id: user.id,
       name: user.name,
+      defaultCurrencyId: user.defaultCurrencyId,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     }),
@@ -33,6 +34,7 @@ export class Users {
 
   constructor(
     private readonly userRepository: Prisma.UserDelegate,
+    private readonly currencies: CurrenciesIface,
   ) {}
 
   private async exists(name: string) {
@@ -54,15 +56,18 @@ export class Users {
   }
 
   async create(data: CreateUserData): Promise<UserData> {
-    const { name } = data;
+    const { name, defaultCurrencyId } = data;
 
     const nameIsUsed = await this.exists(name);
 
     if (nameIsUsed) throw new ErrUserNameAlreadyInUse();
 
+    const { data: currency } = await this.currencies.get(defaultCurrencyId);
+
     const user = await this.userRepository.create({
       data: {
         name,
+        defaultCurrencyId: currency.id,
       },
     });
 
@@ -74,9 +79,10 @@ export class Users {
   async list(query: ListUsersQuery): Promise<UsersDataset> {
     const { page, pageSize, name } = query;
 
-    const where = {
+    const where: Prisma.UserWhereInput = {
       name: {
         contains: name,
+        mode: 'insensitive',
       },
     };
 

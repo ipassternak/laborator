@@ -8,10 +8,13 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid()) @db.VarChar(36)
-  name      String   @unique @db.VarChar(32)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                String   @id @default(uuid()) @db.VarChar(36)
+  name              String   @unique @db.VarChar(32)
+  defaultCurrencyId String   @map("default_currency_id") @db.VarChar(36)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  defaultCurrency Currency @relation(fields: [defaultCurrencyId], references: [id], onDelete: NoAction)
 
   records Record[]
 
@@ -33,6 +36,7 @@ model Record {
   id          String   @id @default(uuid()) @db.VarChar(36)
   userId      String   @map("user_id") @db.VarChar(36)
   categoryId  String?  @map("category_id") @db.VarChar(36)
+  currencyId  String   @map("currency_id") @db.VarChar(36)
   amount      Float
   description String?  @db.VarChar(255)
   createdAt   DateTime @default(now()) @map("created_at")
@@ -40,6 +44,19 @@ model Record {
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  currency Currency  @relation(fields: [currencyId], references: [id], onDelete: NoAction)
 
   @@map("records")
+}
+
+model Currency {
+  id     String @id @default(uuid()) @db.VarChar(36)
+  name   String @unique @db.VarChar(64)
+  code   String @unique @db.Char(3)
+  symbol String @db.VarChar(3)
+
+  records Record[]
+  users   User[]
+
+  @@map("currencies")
 }
