@@ -3,7 +3,10 @@ WORKDIR /tmp/
 COPY package.json package-lock.json tsconfig.json ./
 RUN npm install
 COPY src/ src/
-RUN npm run build -- --sourceMap false && npm prune --production
+COPY prisma/schema.prisma prisma/schema.prisma
+RUN npx prisma generate
+RUN npm run build -- --sourceMap false
+RUN npm prune --production
 
 FROM node:22-alpine
 WORKDIR /app
