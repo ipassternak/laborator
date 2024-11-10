@@ -14,8 +14,14 @@ declare module 'fastify' {
 }
 
 const plugin: AppPlugin = async (app, options) => {
-  const categories = new Categories();
-  const records = new Records(categories, app.users);
+  const categories = new Categories(
+    app.database.category,
+  );
+  const records = new Records(
+    app.database.record,
+    categories,
+    app.users,
+  );
 
   app.decorate('outgoings', {
     categories,

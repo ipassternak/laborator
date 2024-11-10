@@ -20,7 +20,7 @@ const plugin: AppPlugin = async (app) => {
         200: UsersDatasetSchema,
       },
     },
-  }, async ({ query }) => app.users.list(query));
+  }, async ({ query }) => await app.users.list(query));
 
   app.get('/user/:id', {
     schema: {
@@ -32,7 +32,7 @@ const plugin: AppPlugin = async (app) => {
         404: ErrUserNotFoundSchema,
       },
     },
-  }, async ({ params: { id } }) => app.users.get(id));
+  }, async ({ params: { id } }) => await app.users.get(id));
 
   app.post('/user', {
     schema: {
@@ -45,7 +45,7 @@ const plugin: AppPlugin = async (app) => {
       },
     },
   }, async ({ body }, reply) => {
-    const res = app.users.create(body);
+    const res = await app.users.create(body);
 
     reply.code(201).send(res);
   });
@@ -62,7 +62,7 @@ const plugin: AppPlugin = async (app) => {
         409: ErrUserNameAlreadyInUseSchema,
       },
     },
-  }, async ({ params: { id }, body }) => app.users.update(id, body));
+  }, async ({ params: { id }, body }) => await app.users.update(id, body));
 
   app.delete('/user/:id', {
     schema: {
@@ -76,7 +76,7 @@ const plugin: AppPlugin = async (app) => {
         404: ErrUserNotFoundSchema,
       },
     },
-  }, async ({ params: { id } }) => app.users.delete(id));
+  }, async ({ params: { id } }) => await app.users.delete(id));
 };
 
 export default plugin;

@@ -19,7 +19,10 @@ const plugin: AppPlugin = async (app) => {
         200: RecordsDatasetSchema,
       },
     },
-  }, async ({ query }) => app.outgoings.records.list(query));
+  }, async ({ query }) => await app.outgoings.records.list({
+    ...query,
+    categoryId: query.categoryId === 'null' ? null : query.categoryId,
+  }));
 
   app.get('/:id', {
     schema: {
@@ -31,7 +34,7 @@ const plugin: AppPlugin = async (app) => {
         404: ErrRecordNotFoundSchema,
       },
     },
-  }, async ({ params: { id } }) => app.outgoings.records.get(id));
+  }, async ({ params: { id } }) => await app.outgoings.records.get(id));
 
   app.post('', {
     schema: {
@@ -43,7 +46,7 @@ const plugin: AppPlugin = async (app) => {
       },
     },
   }, async ({ body }, reply) => {
-    const res = app.outgoings.records.create(body);
+    const res = await app.outgoings.records.create(body);
 
     reply.code(201).send(res);
   });
@@ -60,7 +63,7 @@ const plugin: AppPlugin = async (app) => {
       },
     },
   }, async ({ params: { id }, body }) =>
-    app.outgoings.records.update(id, body),
+    await app.outgoings.records.update(id, body),
   );
 
   app.delete('/:id', {
@@ -75,7 +78,7 @@ const plugin: AppPlugin = async (app) => {
         404: ErrRecordNotFoundSchema,
       },
     },
-  }, async ({ params: { id } }) => app.outgoings.records.delete(id));
+  }, async ({ params: { id } }) => await app.outgoings.records.delete(id));
 };
 
 export default plugin;

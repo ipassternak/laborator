@@ -1,5 +1,5 @@
-import { randomUUID } from 'node:crypto';
 import { createError } from '@fastify/error';
+import { Prisma, User } from '@prisma/client';
 import {
   CreateUserData,
   ListUsersQuery,
@@ -7,7 +7,7 @@ import {
   UserData,
   UsersDataset,
 } from '../schemas/user';
-import { User, UserErrorCode } from '../types/user';
+import { UserErrorCode } from '../types/user';
 
 export const ErrUserNotFound = createError(
   UserErrorCode.NotFound,
@@ -22,8 +22,6 @@ export const ErrUserNameAlreadyInUse = createError(
 );
 
 export class Users {
-  private readonly storage = new Map<string, User>();
-  private readonly usedNames = new Set<string>();
   private readonly mappers = {
     toData: (user: User) => ({
       id: user.id,
@@ -33,53 +31,68 @@ export class Users {
     }),
   };
 
-  private exists(name: string) {
-    return this.usedNames.has(name);
+  constructor(
+    private readonly userRepository: Prisma.UserDelegate,
+  ) {}
+
+  private async exists(name: string) {
+    const user = await this.userRepository.findUnique({
+      where: { name },
+    });
+
+    return !!user;
   }
 
-  private find(id: string) {
-    const user = this.storage.get(id);
+  private async find(id: string) {
+    const user = await this.userRepository.findUnique({
+      where: { id },
+    });
 
     if (!user) throw new ErrUserNotFound();
 
     return user;
   }
 
-  create(data: CreateUserData): UserData {
+  async create(data: CreateUserData): Promise<UserData> {
     const { name } = data;
 
-    const nameIsUsed = this.exists(name);
+    const nameIsUsed = await this.exists(name);
 
     if (nameIsUsed) throw new ErrUserNameAlreadyInUse();
 
-    const id = randomUUID();
-
-    const user: User = {
-      id,
-      name,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    this.storage.set(id, user);
-    this.usedNames.add(name);
+    const user = await this.userRepository.create({
+      data: {
+        name,
+      },
+    });
 
     return {
       data: this.mappers.toData(user),
     };
   }
 
-  list(query: ListUsersQuery): UsersDataset {
+  async list(query: ListUsersQuery): Promise<UsersDataset> {
     const { page, pageSize, name } = query;
 
-    let users = [...this.storage.values()];
+    const where = {
+      name: {
+        contains: name,
+      },
+    };
 
-    if (name) users = users.filter((user) => user.name.includes(name));
-
-    const total = users.length;
-
-    users.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-    users = users.slice((page - 1) * pageSize, page * pageSize);
+    const [users, total] = await Promise.all([
+      this.userRepository.findMany({
+        where,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.userRepository.count({
+        where,
+      }),
+    ]);
 
     return {
       data: users.map(this.mappers.toData),
@@ -87,46 +100,44 @@ export class Users {
     };
   }
 
-  get(id: string): UserData {
-    const user = this.find(id);
+  async get(id: string): Promise<UserData> {
+    const user = await this.find(id);
 
     return {
       data: this.mappers.toData(user),
     };
   }
 
-  update(id: string, data: UpdateUserData): UserData {
+  async update(id: string, data: UpdateUserData): Promise<UserData> {
     const { name } = data;
 
-    let user = this.find(id);
-
-    if (name === user.name) return {
-      data: this.mappers.toData(user),
-    };
-
-    const nameIsUsed = this.exists(name);
+    const nameIsUsed = await this.exists(name);
 
     if (nameIsUsed) throw new ErrUserNameAlreadyInUse();
 
-    user = { ...user, name, updatedAt: new Date() };
-
-    this.storage.set(id, user);
-    this.usedNames.delete(user.name);
-    this.usedNames.add(name);
+    const user = await this.userRepository.update({
+      where: { id },
+      data: {
+        name,
+      },
+    }).catch(() => {
+      throw new ErrUserNotFound();
+    });
 
     return {
       data: this.mappers.toData(user),
     };
   }
 
-  delete(id: string) {
-    const user = this.find(id);
-
-    this.usedNames.delete(user.name);
-    const success = this.storage.delete(id);
+  async delete(id: string) {
+    await this.userRepository.delete({
+      where: { id },
+    }).catch(() => {
+      throw new ErrUserNotFound();
+    });
 
     return {
-      success,
+      success: true,
     };
   }
 }

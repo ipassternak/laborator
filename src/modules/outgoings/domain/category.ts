@@ -1,5 +1,5 @@
-import { randomUUID } from 'node:crypto';
 import { createError } from '@fastify/error';
+import { Category, Prisma } from '@prisma/client';
 import {
   CategoriesDataset,
   CategoryData,
@@ -7,7 +7,7 @@ import {
   ListCategoriesQuery,
   UpdateCategoryData,
 } from '../schemas/category';
-import { Category, CategoryErrorCode } from '../types/category';
+import { CategoryErrorCode } from '../types/category';
 
 export const ErrNotFound = createError(
   CategoryErrorCode.NotFound,
@@ -22,107 +22,120 @@ export const ErrNameAlreadyInUse = createError(
 );
 
 export class Categories {
-  private readonly storage = new Map<string, Category>();
-  private readonly usedNames = new Set<string>();
+  private readonly mappers = {
+    toData: (category: Category) => ({
+      id: category.id,
+      name: category.name,
+      createdAt: category.createdAt.toISOString(),
+      updatedAt: category.updatedAt.toISOString(),
+    }),
+  };
 
-  constructor() {
-    this.storage = new Map();
-    this.usedNames = new Set();
+  constructor(
+    private readonly categoryRepository: Prisma.CategoryDelegate,
+  ) {}
+
+  private async exists(name: string) {
+    const category = await this.categoryRepository.findUnique({
+      where: { name },
+    });
+
+    return !!category;
   }
 
-  private exists(name: string) {
-    return this.usedNames.has(name);
-  }
-
-  private find(id: string) {
-    const category = this.storage.get(id);
+  private async find(id: string) {
+    const category = await this.categoryRepository.findUnique({
+      where: { id },
+    });
 
     if (!category) throw new ErrNotFound();
 
     return category;
   }
 
-  create(data: CreateCategoryData): CategoryData {
+  async create(data: CreateCategoryData): Promise<CategoryData> {
     const { name } = data;
 
-    const nameIsUsed = this.exists(name);
+    const nameIsUsed = await this.exists(name);
 
     if (nameIsUsed) throw new ErrNameAlreadyInUse();
 
-    const id = randomUUID();
-
-    const category: Category = {
-      id,
-      name,
-    };
-
-    this.storage.set(id, category);
-    this.usedNames.add(name);
+    const category = await this.categoryRepository.create({
+      data: {
+        name,
+      },
+    });
 
     return {
-      data: category,
+      data: this.mappers.toData(category),
     };
   }
 
-  list(query: ListCategoriesQuery): CategoriesDataset {
+  async list(query: ListCategoriesQuery): Promise<CategoriesDataset> {
     const { page, pageSize, name } = query;
 
-    let categories = [...this.storage.values()];
+    const where = {
+      name: {
+        contains: name,
+      },
+    };
 
-    if (name) categories = categories
-      .filter((category) => category.name.includes(name));
-
-    const total = categories.length;
-
-    categories.sort((a, b) => a.name.localeCompare(b.name));
-    categories = categories.slice((page - 1) * pageSize, page * pageSize);
+    const [categories, total] = await Promise.all([
+      this.categoryRepository.findMany({
+        where,
+        orderBy: {
+          name: 'asc',
+        },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.categoryRepository.count({ where }),
+    ]);
 
     return {
-      data: categories,
+      data: categories.map(this.mappers.toData),
       total,
     };
   }
 
-  get(id: string): CategoryData {
-    const category = this.find(id);
+  async get(id: string): Promise<CategoryData> {
+    const category = await this.find(id);
 
     return {
-      data: category,
+      data: this.mappers.toData(category),
     };
   }
 
-  update(id: string, data: UpdateCategoryData): CategoryData {
+  async update(id: string, data: UpdateCategoryData): Promise<CategoryData> {
     const { name } = data;
 
-    let category = this.find(id);
-
-    if (name === category.name) return {
-      data: category,
-    };
-
-    const nameIsUsed = this.exists(name);
+    const nameIsUsed = await this.exists(name);
 
     if (nameIsUsed) throw new ErrNameAlreadyInUse();
 
-    category = { ...category, name };
-
-    this.storage.set(id, category);
-    this.usedNames.delete(category.name);
-    this.usedNames.add(name);
+    const category = await this.categoryRepository.update({
+      where: { id },
+      data: {
+        name,
+      },
+    }).catch(() => {
+      throw new ErrNotFound();
+    });
 
     return {
-      data: category,
+      data: this.mappers.toData(category),
     };
   }
 
-  delete(id: string) {
-    const category = this.find(id);
-
-    this.usedNames.delete(category.name);
-    const success = this.storage.delete(id);
+  async delete(id: string) {
+    await this.categoryRepository.delete({
+      where: { id },
+    }).catch(() => {
+      throw new ErrNotFound();
+    });
 
     return {
-      success,
+      success: true,
     };
   }
 }

@@ -12,8 +12,13 @@ export const ListRecordsQuerySchema = Type.Object({
     maximum: 100,
     default: 10,
   }),
-  userId: Type.Optional(Type.String()),
-  categoryId: Type.Optional(Type.String()),
+  userId: Type.Optional(Type.String({ minLength: 1 })),
+  categoryId: Type.Optional(Type.Union([
+    Type.String({
+      minLength: 1,
+    }),
+    Type.Null(),
+  ])),
   description: Type.Optional(
     Type.String({
       minLength: 3,
@@ -29,8 +34,8 @@ export const ListRecordsQuerySchema = Type.Object({
 export type ListRecordsQuery = Static<typeof ListRecordsQuerySchema>;
 
 export const CreateRecordDataSchema = Type.Object({
-  userId: Type.String(),
-  categoryId: Type.String(),
+  userId: Type.String({ minLength: 1 }),
+  categoryId: Type.Optional(Type.String({ minLength: 1 })),
   amount: Type.Number({ minimum: 0 }),
   description: Type.Optional(Type.String({ minLength: 1, maxLength: 255 })),
 });
@@ -38,6 +43,12 @@ export const CreateRecordDataSchema = Type.Object({
 export type CreateRecordData = Static<typeof CreateRecordDataSchema>;
 
 export const UpdateRecordDataSchema = Type.Object({
+  categoryId: Type.Optional(Type.Union([
+    Type.String({
+      minLength: 1,
+    }),
+    Type.Null(),
+  ])),
   amount: Type.Optional(Type.Number({ minimum: 0 })),
   description: Type.Optional(Type.String({ minLength: 1, maxLength: 255 })),
 });
@@ -47,10 +58,17 @@ export type UpdateRecordData = Static<typeof UpdateRecordDataSchema>;
 export const RecordSchema = Type.Object({
   id: Type.String(),
   userId: Type.String(),
-  categoryId: Type.String(),
+  categoryId: Type.Union([Type.String(), Type.Null()]),
+  category: Type.Union([
+    Type.Object({
+      name: Type.String(),
+    }),
+    Type.Null(),
+  ]),
   amount: Type.Number(),
-  description: Type.Optional(Type.String()),
+  description: Type.Union([Type.String(), Type.Null()]),
   createdAt: Type.String({ format: 'date-time' }),
+  updatedAt: Type.String({ format: 'date-time' }),
 });
 
 export const RecordDataSchema = Type.Object({

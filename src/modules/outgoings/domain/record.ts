@@ -1,5 +1,5 @@
-import { randomUUID } from 'node:crypto';
 import createError from '@fastify/error';
+import { Category, Prisma, Record } from '@prisma/client';
 import {
   CreateRecordData,
   ListRecordsQuery,
@@ -9,7 +9,6 @@ import {
 } from '../schemas/record';
 import {
   CategoriesIface,
-  Record,
   RecordErrorCode,
   UsersIface,
 } from '../types/record';
@@ -21,64 +20,72 @@ const ErrRecordNotFound = createError(
 );
 
 export class Records {
-  private readonly storage = new Map<string, Record>();
   private readonly mappers = {
-    toData: (record: Record) => ({
+    toData: (record: Record & { category: Category | null }) => ({
       id: record.id,
       userId: record.userId,
       categoryId: record.categoryId,
+      category: record.category && {
+        name: record.category.name,
+      },
       amount: record.amount,
       description: record.description,
       createdAt: record.createdAt.toISOString(),
+      updatedAt: record.updatedAt.toISOString(),
     }),
   };
 
   constructor(
+    private readonly recordRepository: Prisma.RecordDelegate,
     private readonly categories: CategoriesIface,
     private readonly users: UsersIface,
   ) {}
 
-  private find(id: string) {
-    const record = this.storage.get(id);
+  private async find(id: string) {
+    const record = await this.recordRepository.findUnique({
+      where: { id },
+      include: { category: true },
+    });
 
     if (!record) throw new ErrRecordNotFound();
 
     return record;
   }
 
-  create(data: CreateRecordData): RecordData {
+  async create(data: CreateRecordData): Promise<RecordData> {
     const { categoryId, userId, amount, description } = data;
 
-    const { data: user } = this.users.get(userId);
-    const { data: category } = this.categories.get(categoryId);
+    const { data: user } = await this.users.get(userId);
+    let ctgId: string | null = null;
+    if (categoryId) {
+      const { data: category } = await this.categories.get(categoryId);
+      ctgId = category.id;
+    }
 
-    const id = randomUUID();
-
-    const record: Record = {
-      id,
-      userId: user.id,
-      categoryId: category.id,
-      amount,
-      description,
-      createdAt: new Date(),
-    };
-
-    this.storage.set(id, record);
-
-    return {
-      data: this.mappers.toData(record),
-    };
-  }
-
-  get(id: string): RecordData {
-    const record = this.find(id);
+    const record = await this.recordRepository.create({
+      data: {
+        userId: user.id,
+        categoryId: ctgId,
+        amount,
+        description,
+      },
+      include: { category: true },
+    });
 
     return {
       data: this.mappers.toData(record),
     };
   }
 
-  list(query: ListRecordsQuery): RecordsDataset {
+  async get(id: string): Promise<RecordData> {
+    const record = await this.find(id);
+
+    return {
+      data: this.mappers.toData(record),
+    };
+  }
+
+  async list(query: ListRecordsQuery): Promise<RecordsDataset> {
     const {
       page,
       pageSize,
@@ -91,35 +98,34 @@ export class Records {
       createdAtTo,
     } = query;
 
-    let records = [...this.storage.values()];
+    const where = {
+      userId,
+      categoryId,
+      description: {
+        contains: description,
+      },
+      amount: {
+        gte: amountFrom,
+        lte: amountTo,
+      },
+      createdAt: {
+        gte: createdAtFrom,
+        lte: createdAtTo,
+      },
+    };
 
-    if (categoryId)
-      records = records.filter((record) => record.categoryId === categoryId);
-
-    if (userId)
-      records = records.filter((record) => record.userId === userId);
-
-    if (description) records = records
-      .filter((record) => record.description?.includes(description));
-
-    if (amountFrom)
-      records = records.filter((record) => record.amount >= amountFrom);
-
-    if (amountTo)
-      records = records.filter((record) => record.amount <= amountTo);
-
-    if (createdAtFrom) records = records.filter(
-      (record) => record.createdAt >= new Date(createdAtFrom),
-    );
-
-    if (createdAtTo) records = records.filter(
-      (record) => record.createdAt <= new Date(createdAtTo),
-    );
-
-    const total = records.length;
-
-    records.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-    records = records.slice((page - 1) * pageSize, page * pageSize);
+    const [records, total] = await Promise.all([
+      this.recordRepository.findMany({
+        where,
+        orderBy: {
+          createdAt: 'asc',
+        },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        include: { category: true },
+      }),
+      this.recordRepository.count({ where }),
+    ]);
 
     return {
       data: records.map(this.mappers.toData),
@@ -127,28 +133,37 @@ export class Records {
     };
   }
 
-  update(id: string, data: UpdateRecordData): RecordData {
-    let record = this.find(id);
-
-    record = {
-      ...record,
-      ...data,
-    };
-
-    this.storage.set(id, record);
+  async update(id: string, data: UpdateRecordData): Promise<RecordData> {
+    let categoryId = data.categoryId;
+    if (categoryId) {
+      const { data: category } = await this.categories.get(categoryId);
+      categoryId = category.id;
+    }
+    const record = await this.recordRepository.update({
+      where: { id },
+      data: {
+        ...data,
+        categoryId,
+      },
+      include: { category: true },
+    }).catch(() => {
+      throw new ErrRecordNotFound();
+    });
 
     return {
       data: this.mappers.toData(record),
     };
   }
 
-  delete(id: string) {
-    this.find(id);
-
-    const success = this.storage.delete(id);
+  async delete(id: string) {
+    await this.recordRepository.delete({
+      where: { id },
+    }).catch(() => {
+      throw new ErrRecordNotFound();
+    });
 
     return {
-      success,
+      success: true,
     };
   }
 }

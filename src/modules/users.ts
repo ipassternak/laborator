@@ -10,7 +10,9 @@ declare module 'fastify' {
 }
 
 const plugin: AppPlugin = async (app, options) => {
-  app.decorate('users', new Users());
+  app.decorate('users', new Users(
+    app.database.user,
+  ));
 
   await app.register(autoload, {
     dir: path.join(__dirname, 'users', 'routes'),

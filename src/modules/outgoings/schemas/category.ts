@@ -35,6 +35,8 @@ export type ListCategoriesQuery = Static<typeof ListCategoriesQuerySchema>;
 const CategorySchema = Type.Object({
   id: Type.String(),
   name: Type.String(),
+  createdAt: Type.String({ format: 'date-time' }),
+  updatedAt: Type.String({ format: 'date-time' }),
 });
 
 export const CategoryDataSchema = Type.Object({
