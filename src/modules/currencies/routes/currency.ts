@@ -14,12 +14,16 @@ const plugin: AppPlugin = async (app) => {
   app.post('', {
     schema: {
       tags: ['Currencies'],
+      security: [{ bearerAuth: [] }],
       summary: 'Create a new currency',
       body: CreateCurrencyDataSchema,
       response: {
         201: CurrencyDataSchema,
         409: ErrCurrencyAlreadyExistsSchema,
       },
+    },
+    config: {
+      secure: true,
     },
   }, async ({ body }, reply) => {
     const currency = await app.currencies.create(body);
@@ -30,6 +34,7 @@ const plugin: AppPlugin = async (app) => {
   app.get('/:id', {
     schema: {
       tags: ['Currencies'],
+      security: [{ bearerAuth: [] }],
       summary: 'Get a currency by id',
       params: CurrencyParamsSchema,
       response: {
@@ -37,22 +42,30 @@ const plugin: AppPlugin = async (app) => {
         404: ErrCurrencyNotFoundSchema,
       },
     },
+    config: {
+      secure: true,
+    },
   }, async ({ params: { id } }) => await app.currencies.get(id));
 
   app.get('', {
     schema: {
       tags: ['Currencies'],
+      security: [{ bearerAuth: [] }],
       summary: 'List all currencies',
       querystring: ListCurrenciesQuerySchema,
       response: {
         200: CurrencyDatasetSchema,
       },
     },
+    config: {
+      secure: true,
+    },
   }, async ({ query }) => await app.currencies.list(query));
 
   app.delete('/:id', {
     schema: {
       tags: ['Currencies'],
+      security: [{ bearerAuth: [] }],
       summary: 'Delete a currency by id',
       params: CurrencyParamsSchema,
       response: {
@@ -62,6 +75,9 @@ const plugin: AppPlugin = async (app) => {
         400: ErrCurrencyInUseSchema,
         404: ErrCurrencyNotFoundSchema,
       },
+    },
+    config: {
+      secure: true,
     },
   }, async ({ params: { id } }) => await app.currencies.delete(id));
 };

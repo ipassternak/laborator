@@ -14,17 +14,22 @@ const plugin: AppPlugin = async (app) => {
   app.get('/users', {
     schema: {
       tags: ['Users'],
+      security: [{ bearerAuth: [] }],
       summary: 'Get a list of users',
       querystring: ListUsersQuerySchema,
       response: {
         200: UsersDatasetSchema,
       },
     },
+    config: {
+      secure: true,
+    },
   }, async ({ query }) => await app.users.list(query));
 
   app.get('/user/:id', {
     schema: {
       tags: ['Users'],
+      security: [{ bearerAuth: [] }],
       summary: 'Get a user by id',
       params: UserParamsSchema,
       response: {
@@ -32,17 +37,24 @@ const plugin: AppPlugin = async (app) => {
         404: ErrUserNotFoundSchema,
       },
     },
+    config: {
+      secure: true,
+    },
   }, async ({ params: { id } }) => await app.users.get(id));
 
   app.post('/user', {
     schema: {
       tags: ['Users'],
+      security: [{ bearerAuth: [] }],
       summary: 'Create a new user',
       body: CreateUserDataSchema,
       response: {
         201: UserDataSchema,
         409: ErrUserNameAlreadyInUseSchema,
       },
+    },
+    config: {
+      secure: true,
     },
   }, async ({ body }, reply) => {
     const res = await app.users.create(body);
@@ -53,6 +65,7 @@ const plugin: AppPlugin = async (app) => {
   app.patch('/user/:id', {
     schema: {
       tags: ['Users'],
+      security: [{ bearerAuth: [] }],
       summary: 'Update user name by id',
       params: UserParamsSchema,
       body: UpdateUserDataSchema,
@@ -62,11 +75,15 @@ const plugin: AppPlugin = async (app) => {
         409: ErrUserNameAlreadyInUseSchema,
       },
     },
+    config: {
+      secure: true,
+    },
   }, async ({ params: { id }, body }) => await app.users.update(id, body));
 
   app.delete('/user/:id', {
     schema: {
       tags: ['Users'],
+      security: [{ bearerAuth: [] }],
       summary: 'Delete a user by id',
       params: UserParamsSchema,
       response: {
@@ -75,6 +92,9 @@ const plugin: AppPlugin = async (app) => {
         }),
         404: ErrUserNotFoundSchema,
       },
+    },
+    config: {
+      secure: true,
     },
   }, async ({ params: { id } }) => await app.users.delete(id));
 };
