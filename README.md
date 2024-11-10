@@ -4,7 +4,10 @@ Laborator is a simple Node.js project built on the [Fastify](https://github.com/
 
 ## Variant of an additional laboratory task
 
-1 variant
+1 variant - Currencies
+```
+Для валют - потрібно зробити окрему сутність, також для кожного користувача повинна бути валюта по замовчуванню(її можна встановити) а також при створенні витрати, можна вказувати валюту, проте не обов’язково(якщо не вказали то буде використана валюта по замовчуванню).
+```
 
 ## Getting Started
 
