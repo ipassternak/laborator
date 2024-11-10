@@ -31,6 +31,7 @@
     "@fastify/swagger": "^9.2.0",
     "@fastify/swagger-ui": "^5.1.0",
     "@fastify/type-provider-typebox": "^5.0.0",
+    "@prisma/client": "^5.22.0",
     "@sinclair/typebox": "^0.33.12",
     "close-with-grace": "^2.1.0",
     "fastify": "^5.0.0",
@@ -45,6 +46,7 @@
     "eslint-plugin-import": "^2.31.0",
     "fastify-tsconfig": "^2.0.0",
     "pino-pretty": "^11.2.2",
+    "prisma": "^5.22.0",
     "typescript": "^5.6.2",
     "typescript-eslint": "^8.8.0"
   }

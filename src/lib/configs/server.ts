@@ -23,6 +23,9 @@ export const ServerConfigSchema = Type.Object({
   trustProxy: Type.Boolean({
     default: false,
   }),
+  shutdownTimeout: Type.Integer({
+    default: 5000,
+  }),
   swaggerUiRoute: Type.Optional(Type.String({})),
   healthcheckRoute: Type.Optional(Type.String({})),
 });

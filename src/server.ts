@@ -31,7 +31,10 @@ async function bootstrap() {
     port: cfg.server.port,
   });
 
-  closeWithGrace(async ({ signal, err }) => {
+  closeWithGrace({
+    delay: cfg.server.shutdownTimeout,
+    logger: false,
+  }, async ({ signal, err }) => {
     if (err) {
       app.log.error({ err }, 'server closing with error');
     } else {

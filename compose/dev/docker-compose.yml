@@ -13,6 +13,16 @@ services:
       - "$ROOT:/app:delegated"
     command: ["npm", "install"]
 
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=laborator
+      - POSTGRES_PASSWORD=laborator
+      - POSTGRES_DB=laborator
+    ports:
+      - "5432:5432"
+
   laborator:
     image: laborator
     build:
